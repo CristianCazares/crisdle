@@ -15289,4 +15289,93 @@ const dictionary = [
     "rural",
     "shave"
 ]
+const WORD_LENGTH = 5;
 
+const guessGrid = document.querySelector("[data-guess-grid]")
+
+startInteraction();
+
+//A function to have the option to stop the event listeners
+function startInteraction(){
+    document.addEventListener("click", handleMouseClick);
+    document.addEventListener("keydown", handleKeyPress);
+}
+
+function stopInteraction(){
+    document.removeEventListener("click", handleMouseClick);
+    document.removeEventListener("keydown", handleKeyPress);
+}
+
+function handleMouseClick(e){
+    if(e.target.matches("[data-key]")){
+        pressKey(e.target.dataset.key);
+        return;
+    }
+
+    if (e.target.matches("[data-enter]")){
+        submitGuess();
+        return;
+    }
+
+    if(e.target.matches("[data-delete")){
+        deleteKey();
+        return;
+    }
+}
+
+function handleKeyPress(e){
+    if(e.key === "Enter"){
+        submitGuess()
+        return;
+    }
+
+    if(e.key === "Backspace" || e.key === "Delete"){
+        deleteKey();
+        return;
+    }
+
+    if(e.key.match(/^[a-z]$/)){
+        //"/[a-z]/":any character between 'a' and 'z'
+        //^:start $:end so its only one character long ("[]")
+        pressKey(e.key);
+        return;
+    }
+}
+
+function pressKey(key){
+    //Get a array of all the div's with "active" dateset
+    // (remember that active means that it is a tile that was typed on)
+    const activeTiles = getActiveTiles();
+    if(activeTiles.length >= WORD_LENGTH){
+        return;
+    }
+    const nextTile = guessGrid.querySelector(":not([data-letter])");
+    //^-Query selector looks for the first match attribute.
+    // Therefore, we look for the first that does not has a "visited" attribute ("[data-letter]")
+    // and we added that new attribute to the just visited letter.
+
+    //Sets the letter to the div as an dataset to look for it on the dictionary later on
+    nextTile.dataset.letter = key.toLowerCase();
+    //Puts said letter in the tile
+    nextTile.textContent = key;
+    nextTile.dataset.state = "active"
+}
+
+function deleteKey(){
+    //Get a array of all the div's with "active" dateset
+    const activeTiles = getActiveTiles();
+    //Get the last added to the array
+    const lastTile = activeTiles[activeTiles.length - 1]
+    if(lastTile == null){
+        return;
+    }
+
+    //Deletion process of a filled/typed letter:
+    lastTile.textContent = " ";
+    delete lastTile.dataset.state;
+    delete lastTile.dataset.letter;
+}
+
+function getActiveTiles(){
+    return guessGrid.querySelectorAll('[data-state="active"]')
+}
