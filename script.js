@@ -15289,11 +15289,17 @@ const dictionary = [
     "rural",
     "shave"
 ]
+
 const WORD_LENGTH = 5;
+const FLIP_ANIMATION_DURATION = 500;
+const DANCE_ANIMATION_DURATION = 500;
 
-const guessGrid = document.querySelector("[data-guess-grid]"); //Get the div with that data set as a query
+//Elements from the HTML layout
 const alertContainer = document.querySelector("[data-alert-container]");
+const guessGrid = document.querySelector("[data-guess-grid]"); //Get the div with that data set as a query
+const keyboard = document.querySelector("[data-keyboard]")
 
+//Word picker
 const offsetFromDate = new Date(2022, 0, 2);      //Start date
 const msOffset = Date.now() - offsetFromDate;     //Today
 const dayOffset = msOffset / 1000 / 60 / 60 / 24; //Ellapsed time
@@ -15384,16 +15390,65 @@ function deleteKey(){
 }
 
 function submitGuess(){
+  const maxAlerts = 7;
   const activeTiles = [...getActiveTiles()];
   if (activeTiles.length != WORD_LENGTH){
-    showAlert("Not long enough");
-    shakeTiles();
-    console.log("Not long enough " + activeTiles.length + "/5 letters");
+    if(alertContainer.childElementCount < maxAlerts){
+      showAlert("Not enough letters (" + activeTiles.length + "/5)");
+    }
+    shakeTiles(activeTiles);
+    return;
   }
+
+  //Convert the active tiles into a full word in order to get the user's guess
+  const guess = activeTiles.reduce((word, tile) => {
+    return word + tile.dataset.letter;
+  }, "")
+  console.log(guess);
+  
+  if(!dictionary.includes(guess) && alertContainer.childElementCount < maxAlerts){
+    showAlert("Not a word!");
+    shakeTiles(activeTiles);
+    return;
+  }
+
+  stopInteraction();
+  activeTiles.forEach((...params) => flipTile(...params, guess));
+}
+
+function flipTile(tile, index, array, guess){
+  const letter = tile.dataset.letter;
+  const key = keyboard.querySelector(`[data-key="${letter}"i]`)
+  setTimeout(() => {
+    tile.classList.add("flip")
+  }, index * FLIP_ANIMATION_DURATION / 2);
+
+  tile.addEventListener("transitionend", () =>{
+    tile.classList.remove("flip");
+
+    //CHECK IF IS CORRECT
+    if(targetWord[index] === letter){
+      tile.dataset.state = "correct";
+      key.classList.add("correct");
+    }else if(targetWord.includes(letter)){
+      tile.dataset.state = "wrong-location";
+      key.classList.add("wrong-location");
+    }else{
+      tile.dataset.state = "wrong";
+      key.classList.add("wrong");
+    }
+
+    if(index === array.length - 1){
+      tile.addEventListener("transitionend", () => {
+        startInteraction();
+        checkWinLose(guess, array);
+      }, {once: true})
+    }
+  }, {once: true})
 }
 
 function getActiveTiles(){
-    return guessGrid.querySelectorAll('[data-state="active"]')
+  return guessGrid.querySelectorAll('[data-state="active"]')
 }
 
 function showAlert(msg, duration = 1000){
@@ -15411,4 +15466,52 @@ function showAlert(msg, duration = 1000){
       alert.remove();
     });
   }, duration);
+}
+
+function shakeTiles(tiles){
+  tiles.forEach(tile => {
+    tile.classList.add("shake");
+    tile.addEventListener(
+      "animationend",
+      () => {
+        tile.classList.remove("shake")
+      },
+      {once: true}
+    );
+  })
+}
+
+function checkWinLose(guess, tiles){
+  if(guess === targetWord){
+    showAlert("You Win", 5000);
+    danceTiles(tiles);
+    stopInteraction();
+    return;
+  }
+
+  const remainingTiles = guessGrid.querySelectorAll(":not([data-letter])");
+  if(remainingTiles.length === 0){
+    showAlert(targetWord.toUpperCase(), null);
+    stopInteraction();
+    const allTiles = guessGrid.querySelectorAll(".tile");
+    shakeTiles(allTiles);
+    allTiles.forEach(tile =>{
+      tile.classList.add("lost");
+    });
+  }
+}
+
+function danceTiles(tiles){
+  tiles.forEach((tile, index) => {
+    setTimeout(() => {
+      tile.classList.add("dance")
+      tile.addEventListener(
+        "animationend",
+        () => {
+          tile.classList.remove("dance");
+        },
+        {once: true}
+      )
+    }, index * DANCE_ANIMATION_DURATION / 5);
+  })
 }
