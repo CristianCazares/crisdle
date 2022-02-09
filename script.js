@@ -15291,7 +15291,14 @@ const dictionary = [
 ]
 const WORD_LENGTH = 5;
 
-const guessGrid = document.querySelector("[data-guess-grid]")
+const guessGrid = document.querySelector("[data-guess-grid]"); //Get the div with that data set as a query
+const alertContainer = document.querySelector("[data-alert-container]");
+
+const offsetFromDate = new Date(2022, 0, 2);      //Start date
+const msOffset = Date.now() - offsetFromDate;     //Today
+const dayOffset = msOffset / 1000 / 60 / 60 / 24; //Ellapsed time
+const targetWord = targetWords[Math.floor(dayOffset)];
+
 
 startInteraction();
 
@@ -15367,7 +15374,7 @@ function deleteKey(){
     //Get the last added to the array
     const lastTile = activeTiles[activeTiles.length - 1]
     if(lastTile == null){
-        return;
+      return;
     }
 
     //Deletion process of a filled/typed letter:
@@ -15376,6 +15383,32 @@ function deleteKey(){
     delete lastTile.dataset.letter;
 }
 
+function submitGuess(){
+  const activeTiles = [...getActiveTiles()];
+  if (activeTiles.length != WORD_LENGTH){
+    showAlert("Not long enough");
+    shakeTiles();
+    console.log("Not long enough " + activeTiles.length + "/5 letters");
+  }
+}
+
 function getActiveTiles(){
     return guessGrid.querySelectorAll('[data-state="active"]')
+}
+
+function showAlert(msg, duration = 1000){
+  const alert = document.createElement("div");
+  alert.textContent = msg;
+  alert.classList.add("alert");
+  alertContainer.prepend(alert);
+  if(duration == null){
+    return;
+  }
+
+  setTimeout(() =>{
+    alert.classList.add("hide")
+    alert.addEventListener("transitionend", () =>{
+      alert.remove();
+    });
+  }, duration);
 }
