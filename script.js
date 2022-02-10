@@ -15312,6 +15312,7 @@ startInteraction();
 function startInteraction(){
     document.addEventListener("click", handleMouseClick);
     document.addEventListener("keydown", handleKeyPress);
+    document.addEventListener("keyup", handleKeyUp);
 }
 
 function stopInteraction(){
@@ -15337,6 +15338,7 @@ function handleMouseClick(e){
 }
 
 function handleKeyPress(e){
+    hoverKey(e.key);
     if(e.key === "Enter"){
         submitGuess()
         return;
@@ -15347,7 +15349,7 @@ function handleKeyPress(e){
         return;
     }
 
-    if(e.key.match(/^[a-z]$/)){
+    if(e.key.match(/^[a-z]$/) || e.key.match(/^[A-Z]$/)){
         //"/[a-z]/":any character between 'a' and 'z'
         //^:start $:end so its only one character long ("[]")
         pressKey(e.key);
@@ -15355,12 +15357,24 @@ function handleKeyPress(e){
     }
 }
 
+function handleKeyUp(e){
+  let keyboardKey = keyboard.querySelector(`[data-key="${e.key}"i]`);
+  if(!keyboardKey){
+    if(e.key == "Backspace"){
+      keyboardKey = keyboard.querySelector("[data-delete]");
+    }else if(e.key == "Enter"){
+      keyboardKey = keyboard.querySelector("[data-enter]");
+    }else{return;}
+  }
+  keyboardKey.classList.remove("hover")
+}
+
 function pressKey(key){
     //Get a array of all the div's with "active" dateset
     // (remember that active means that it is a tile that was typed on)
     const activeTiles = getActiveTiles();
     if(activeTiles.length >= WORD_LENGTH){
-        return;
+      return;
     }
     const nextTile = guessGrid.querySelector(":not([data-letter])");
     //^-Query selector looks for the first match attribute.
@@ -15372,6 +15386,19 @@ function pressKey(key){
     //Puts said letter in the tile
     nextTile.textContent = key;
     nextTile.dataset.state = "active"
+}
+
+function hoverKey(key){
+  let keyboardKey = keyboard.querySelector(`[data-key="${key}"i]`);
+  if(!keyboardKey){
+    keyboardKey = keyboard.querySelector(".key.large");
+    if(key == "Backspace"){
+      keyboardKey = keyboard.querySelector("[data-delete]");
+    }else if(key == "Enter"){
+      keyboardKey = keyboard.querySelector("[data-enter]");
+    }else{return;}
+  }
+  keyboardKey.classList.add("hover");
 }
 
 function deleteKey(){
@@ -15404,7 +15431,7 @@ function submitGuess(){
   const guess = activeTiles.reduce((word, tile) => {
     return word + tile.dataset.letter;
   }, "")
-  console.log(guess);
+  //con-sole.log(guess);
   
   if(!dictionary.includes(guess) && alertContainer.childElementCount < maxAlerts){
     showAlert("Not a word!");

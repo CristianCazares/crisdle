@@ -55,6 +55,10 @@ body{
     --lightness-offset:10%
 }
 
+.key.hover{
+    --lightness-offset: 30%;
+}
+
 .key.wrong{
     --lightness: 23%;
 }
@@ -71,6 +75,16 @@ body{
     --lightness: 43%;
 }
 
+.head{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    border-bottom: 0.1vh solid hsl(204, 7%, 85%);
+    font-family: Oswald;
+    font-size: 2em;
+}
 
 .guess-grid{
     display: grid;
