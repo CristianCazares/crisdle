@@ -37,7 +37,7 @@ body{
     color: white;
     fill: white;
     text-transform: uppercase;
-    border-radius: 0.5em;
+    border-radius: 10%;
     cursor: pointer;
     user-select: none;
 }
@@ -47,8 +47,8 @@ body{
 }
 
 .key > svg{
-    width: 1.75em;
-    height: 1.75em;
+    width: 1.5em;
+    height: 1.5em;
 }
 
 .key:hover, .key:focus{
@@ -108,7 +108,7 @@ body{
     align-items: center;
     user-select: none;
     transition: transform 250ms linear;
-    border-radius: 0%;
+    border-radius: 25%;
 }
 
 .tile[data-state="active"]{
@@ -210,10 +210,10 @@ body{
     pointer-events: none;
     background-color: hsl(204, 7%, 85%);
     padding: .75em;
-    border-radius: .25em;
+    border-radius: 2em;
     opacity: 1;
     transition: opacity 500ms ease-in-out;
-    margin-bottom: .5em;
+    margin-bottom: .20em;
 }
 
 .alert:last-child{
